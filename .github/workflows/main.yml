@@ -22,7 +22,9 @@ jobs:
           context: ./src
           push: true
           file: ./src/Dockerfile
-          tags: ademirpereira/fake-shop:v${{ github.run_number }}
+          tags: |  
+            ademirpereira/fake-shop:v${{ github.run_number }}
+            ademirpereira/fake-shop:latest
 
 
   CD:
@@ -33,8 +35,17 @@ jobs:
       - name: Obter Codigo
         uses: actions/checkout@v4.2.2
 
-      - run: echo "config kubernetes"
-      - run: echo "excutar apply"
+      - uses: azure/k8s-set-context@v4
+        with:
+           method: kubeconfig
+           kubeconfig: ${{ secrets.K8S_KUBECONFIG }}
+
+      - uses: Azure/k8s-deploy@v5
+        with:
+          manifests: |
+            k8s/deployment.yaml
+          images: ademirpereira/fake-shop:v${{ github.run_number }}
+
 
     
   
